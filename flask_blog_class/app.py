@@ -43,6 +43,22 @@ def create():
 
     if request.method == 'POST':
         pass
+    #get the title and content that was submitted in the form
+    title = request.form['title']
+    content = request.form['content']
+
+    #display an error message if the title or content is empty
+    #else make a database connection and insert the blog post content
+    if not title:
+        flash('Title is required!')
+    elif not content:
+        flash('Content is required!')
+    else:
+        conn = get_db_connection()
+        conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)', (title, content))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('index'))
 
     return render_template('create.html')
 

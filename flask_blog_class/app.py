@@ -55,8 +55,19 @@ def create():
             conn.close()
             return redirect(url_for('index'))
 
-    return render_template('create.html', title=title, content=content)
+    return render_template('create.html')
 
+#create a route to edit a post. Load page with get or edit method
+#pass the post id as a url parameter
+@app.route('/<int:id>/edit/', methods=('GET', 'POST'))
+def edit(id):
+    #get the post from the database with a select query for the post with that select id
+
+
+    #determine if the page was requested with a GET or POST method
+    #if GET, then display the page
+    #if POST, then process the form data. Get data and validate it. Update the post and redirect to the home page
+    pass
 
 
 app.run(port=5008)

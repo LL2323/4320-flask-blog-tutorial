@@ -20,6 +20,15 @@ def get_db_connection():
     #return the connection object
     return conn
 
+def get_post(post_id):
+    conn = get_db_connection()
+    post = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
+    conn.close()
+
+    if post is None:
+        abort(404)
+
+    return post
 
 # use the app.route() decorator to create a Flask view function called index()
 @app.route('/')
@@ -62,12 +71,54 @@ def create():
 @app.route('/<int:id>/edit/', methods=('GET', 'POST'))
 def edit(id):
     #get the post from the database with a select query for the post with that select id
-
+    post = get_post(id)
 
     #determine if the page was requested with a GET or POST method
-    #if GET, then display the page
     #if POST, then process the form data. Get data and validate it. Update the post and redirect to the home page
-    pass
+    if request.method == 'POST':
+        #get the title and content
+        title = request.form.get('title')
+        content = request.form.get('content')
+
+    #if no title or content, then flash a message
+        if not title:
+            flash('Title is required!')
+        elif not content:
+            flash('Content is required!')
+        else:
+            #update the post in the database
+            conn = get_db_connection()
+
+            conn.execute('UPDATE posts SET title = ?, content = ? WHERE id = ?', (title, content, id))
+            conn.commit()
+            conn.close()
+
+            #redirect to the home page
+            return redirect(url_for('index'))
+    
+    
+    #if GET, then display the page
+    return render_template('edit.html', post=post)
+
+#create a route to delete a post
+#delete route will only be processed with a POST method
+@app.route('/<int:id>/delete/', methods=('POST',))
+def delete(id):
+    #get the post
+    post = get_post(id)
+
+    #connect to the database
+    conn = get_db_connection()
+    conn.execute('DELETE FROM posts WHERE id = ?', (id,))
+
+    #execute a delete query
+    conn.commit()
+    conn.close()
+
+    #flash a success message
+    flash('"{}" was successfully deleted!'.format(post['title']))
+    #redirect to the home page
+    return redirect(url_for('index'))
 
 
 app.run(port=5008)
